@@ -50,10 +50,11 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AssemblyData.cs" />
-    <Compile Include="CodeBase.cs" />
-    <Compile Include="CodeMethod.cs" />
-    <Compile Include="CodeType.cs" />
+    <Compile Include="CecilModel\CecilAssemblyData.cs" />
+    <Compile Include="CecilModel\CodeBase.cs" />
+    <Compile Include="CecilModel\CodeInstruction.cs" />
+    <Compile Include="CecilModel\CodeMethod.cs" />
+    <Compile Include="CecilModel\CodeType.cs" />
     <Compile Include="Logger.cs" />
   </ItemGroup>
   <ItemGroup>

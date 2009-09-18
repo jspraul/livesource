@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Mono.Cecil;
 
-namespace LiveSource.Core
+namespace LiveSource.Core.CecilModel
 {
     internal class CodeType
     {

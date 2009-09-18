@@ -1,14 +1,21 @@
-﻿namespace LiveSource.Core
+﻿namespace LiveSource.Core.CecilModel
 {
-    public class AssemblyData {
+    public interface IAssemblyData
+    {
+        string AssemblyFile { get; set; }
+        void InjectCode();
+    }
+
+    public class CecilAssemblyData : IAssemblyData
+    {
         public string AssemblyFile { get; set; }
 
-        public AssemblyData(string assemblyFile) 
+        public CecilAssemblyData(string assemblyFile) 
         {
             AssemblyFile = assemblyFile;
         }
 
-        public void InjectCode() 
+        public void InjectCode()
         {
             Logger.Current.Info("Processing assembly:" + this.AssemblyFile);
 

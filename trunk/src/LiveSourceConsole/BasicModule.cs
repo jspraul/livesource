@@ -1,3 +1,4 @@
+using LiveSource.Core.CecilModel;
 using Ninject.Core;
 
 namespace LiveSource.LiveSourceConsole
@@ -7,6 +8,7 @@ namespace LiveSource.LiveSourceConsole
         public override void Load()
         {
             Bind<IAssemblyFilesSelector>().To<MockAssemblyFilesSelector>();
+            Bind<IAssemblyData>().To<CecilAssemblyData>();
         }
     }
 }
