@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<project name="LiveSource" default="full" xmlns="http://nant.sf.net/schemas/nant.xsd">
+	<property name="build.dir" value="build" />
+	<property name="nant.settings.currentframework" value="net-3.5" />
+
+	<!-- User targets -->
+	<target name="clean" description="Delete Automated Build artifacts">
+		<delete dir="${build.dir}" if="${directory::exists(build.dir)}"/>
+	</target>
+
+	<target name="compile" description="Compiles using the Debug Configuration">
+		<msbuild project="src\LiveSource.sln">
+			<property name="Configuration" value="Debug" />
+		</msbuild>
+	</target>
+
+	<target name="test" depends="generate-version-file, compile, run-unit-tests" 
+		description="Generate Version File, Compile and Run Tests" />
+		
+	<target name="full" depends="clean, test, dist"	description="Compiles, tests, and produces distributions" />
+
+	<!-- Internal targets -->
+	<target name="run-unit-tests" fail="true">
+		<mkdir dir="${build.dir}\test-reports" />
+		<mkdir dir="${build.dir}\coverage-reports" />
+		<copy file="tools\ncover\Coverage.xsl" todir="${build.dir}\coverage-reports" />		
+		<exec program="regsvr32" workingdir="tools\NCover" commandline="/s CoverLib.dll" />
+		<exec program="tools\ncover\NCover.Console.exe" 
+			workingdir="${build.dir}\Debug">
+			<arg value="//w &quot;.&quot;" />
+			<arg value="//x &quot;..\..\build\coverage-reports\Coverage.xml&quot;" />
+			<arg value="&quot;..\..\tools\nunit\nunit-console.exe&quot;" />
+			<arg value="&quot;LiveSource.UnitTests.dll&quot; &quot;/xml:..\..\build\test-reports\UnitTests.xml&quot; &quot;/nologo&quot;" />
+		</exec>
+	</target>
+	
+	<target name="dist">
+		<copy todir="${build.dir}\dist">
+			<fileset basedir="${build.dir}\Debug\LiveSource">
+				<include name="**\*"/>
+				<exclude name="**\*.pdb" />
+			</fileset>
+		</copy>
+		<zip zipfile="${build.dir}\LiveSource-${LiveSource.version}.zip">
+			<fileset basedir="${build.dir}\dist">
+				<include name="**\*" />
+			</fileset>
+		</zip>
+	</target>
+	
+	<target name="generate-version-file">
+		<property name="buildnumber.major" value="1" />
+		<property name="buildnumber.minor" value="0" />
+		<property name="buildnumber.build" value="0" />
+		<property name="buildnumber.revision" value="0" />
+		
+	    <property name="hudson.build" value="${buildnumber.build}" />
+
+		<!-- add code to get version number from hudson BUILD_NUMBER env variable -->
+	    
+	    <property name="LiveSource.version" 
+	              value="${buildnumber.major}.${buildnumber.minor}.${hudson.build}.${buildnumber.revision}"/>
+	    
+	    <echo message="New build version : ${LiveSource.version}"/>
+
+	    <asminfo output="src\SharedAssemblyInfo.cs" language="CSharp">
+	      <imports>
+	        <import namespace="System" />
+	        <import namespace="System.Reflection" />
+	      </imports>
+	      <attributes>
+	        <attribute type="AssemblyVersionAttribute" value="${LiveSource.version}" />
+	        <attribute type="AssemblyFileVersionAttribute" value="${LiveSource.version}" />
+	      </attributes>
+	    </asminfo>
+	</target>
+</project>
+
