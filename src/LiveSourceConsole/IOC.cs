@@ -1,4 +1,6 @@
-﻿using Ninject.Core;
+﻿using LiveSource.Core.CecilModel;
+using Ninject.Core;
+using Ninject.Core.Parameters;
 
 namespace LiveSource.LiveSourceConsole
 {
@@ -14,6 +16,11 @@ namespace LiveSource.LiveSourceConsole
         public static T Get<T>() 
         {
             return kernel.Get<T>();
+        }
+
+        public static T Get<T>(ParameterCollectionBuilder builder)
+        {
+            return kernel.Get<T>(builder);
         }
     }
 }

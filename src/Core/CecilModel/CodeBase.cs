@@ -4,7 +4,7 @@ using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 
-namespace LiveSource.Core
+namespace LiveSource.Core.CecilModel
 {
     internal class CodeBase
     {
@@ -39,21 +39,27 @@ namespace LiveSource.Core
 
         public void Inject(CodeMethod method)
         {
-            Logger.Current.Debug("Method >> " + method.MethodDefinition.Name);
+//            Logger.Current.Debug("Method >> " + method.MethodDefinition.Name);
+
             if (null == method.MethodDefinition.Body)
                 return;
+            
+            if (method.MethodDefinition.Attributes.ToString().Contains("Compilercontrolled"))
+            {
+                Logger.Current.Debug("Method:" + method.MethodDefinition.DeclaringType.FullName + "." + method.MethodDefinition.Name + " is compiler controlled");
+                return;
+            }
+            
+//            AddStartMethodStatement(method, method.MethodDefinition.Body.Instructions[0], ">Begin");
 
-            AddStartMethodStatement(method, method.MethodDefinition.Body.Instructions[0], ">Begin");
-
-//            // TODO: Loop through all the instruction and add end statement before every ret instruction
-//            foreach (Instruction instruction in method.MethodDefinition.Body.Instructions)
-//            {
-//                if (instruction.OpCode.Equals(OpCodes.Ret))
-//                {
-//                    Logger.Current.Debug("Instruction is Ret");
-//                    AddEndMethodStatement(method, instruction, "End");
-//                }
-//            }
+            foreach (CodeInstruction i in method.Instructions)
+            {
+                if(i.Instruction.OpCode.Equals(OpCodes.Ret))
+                {
+//                    Console.WriteLine("Instruction is ret");
+                    //AddEndMethodStatement(method, i.Instruction, "<End");
+                }
+            }
         }
 
         private void AddStartMethodStatement(CodeMethod method, Instruction instruction, string prefix)

@@ -1,6 +1,8 @@
 using System;
 using LiveSource.Core;
+using LiveSource.Core.CecilModel;
 using Ninject.Core;
+using Ninject.Core.Parameters;
 
 namespace LiveSource.LiveSourceConsole
 {
@@ -25,7 +27,8 @@ namespace LiveSource.LiveSourceConsole
 
             foreach(String assemblyFile in assemblyFiles)
             {
-                AssemblyData assemblyData = new AssemblyData(assemblyFile);
+                IAssemblyData assemblyData = 
+                    IOC.Get<IAssemblyData>(With.Parameters.ConstructorArgument("assemblyFile", assemblyFile)); 
                 assemblyData.InjectCode();
             }
 	    }

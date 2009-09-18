@@ -9,10 +9,11 @@ namespace LiveSource.LiveSourceConsole
 
     public class MockAssemblyFilesSelector : IAssemblyFilesSelector
     {
-        public string[] SelectAssemblies() {
-                        return new[] { @"E:\Code\LiveSource\build\Debug\LiveSource.UnitTests.dll" };
-//            string sourceFilePath = @"E:\code\Sourceforge\dotnet\wittytwitter\Witty\Witty\bin\Debug\Witty_2.exe";
-//            string destinationFilePath = @"E:\code\Sourceforge\dotnet\wittytwitter\Witty\Witty\bin\Debug\Witty.exe";
+        public string[] SelectAssemblies() 
+        {
+              return new[] { @"E:\Code\LiveSource\build\Debug\LiveSource.UnitTests.dll" };
+//            string sourceFilePath = @"E:\Code\Sourceforge\dotnet\chumchase\main\ChumChase\bin\Debug\ChumChase_2.exe";
+//            string destinationFilePath = @"E:\Code\Sourceforge\dotnet\chumchase\main\ChumChase\bin\Debug\ChumChase.exe";
 //            File.Copy(sourceFilePath, destinationFilePath, true);
 //            return new[] { destinationFilePath };
         }
