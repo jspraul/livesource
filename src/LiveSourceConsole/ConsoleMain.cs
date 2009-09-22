@@ -1,6 +1,5 @@
 using System;
 using LiveSource.Core;
-using LiveSource.Core.CecilModel;
 using Ninject.Core;
 using Ninject.Core.Parameters;
 
@@ -8,9 +7,6 @@ namespace LiveSource.LiveSourceConsole
 {
 	public class ConsoleMain
 	{   
-        [Inject]
-	    public IAssemblyFilesSelector AssemblyFilesSelector { get; set; }
-
 		[STAThread]
 		static void Main()
 		{

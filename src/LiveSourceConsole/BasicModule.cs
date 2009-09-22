@@ -1,3 +1,4 @@
+using LiveSource.Core;
 using LiveSource.Core.CecilModel;
 using Ninject.Core;
 

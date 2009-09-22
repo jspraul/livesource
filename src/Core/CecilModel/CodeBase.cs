@@ -15,20 +15,25 @@ namespace LiveSource.Core.CecilModel
         public CodeBase(string assemblyFile)
         {
             _Assembly = AssemblyFactory.GetAssembly(assemblyFile);
-            Logger.Current.Info(">>>> Adding assembly reference to LoggingAspect");
-            AssemblyNameReference aspectAssemblyReference = new AssemblyNameReference("LoggingAspect.dll", "", new Version(1, 0, 0, 0));
-            _Assembly.MainModule.AssemblyReferences.Add(aspectAssemblyReference);
 
-            MethodInfo debugWriter = typeof(LoggingAspect.AspectLogger).GetMethod("Debug", new[] { typeof(string) });
+            MethodInfo debugWriter = typeof (LoggingAspect.AspectLogger).GetMethod("Debug", new[] {typeof (string)});
             loggerDebug = _Assembly.MainModule.Import(debugWriter);
+        }
+
+        public void AddAssemblyReference()
+        {
+            Logger.Current.Info(">>>> Adding assembly reference to LoggingAspect");
+            AssemblyNameReference aspectAssemblyReference = new AssemblyNameReference("LoggingAspect.dll", "",
+                                                                                      new Version(1, 0, 0, 0));
+            _Assembly.MainModule.AssemblyReferences.Add(aspectAssemblyReference);
         }
 
         public List<CodeType> Types
         {
-            get 
+            get
             {
                 List<CodeType> codeTypes = new List<CodeType>();
-                foreach(TypeDefinition typeDefinition in _Assembly.MainModule.Types)
+                foreach (TypeDefinition typeDefinition in _Assembly.MainModule.Types)
                 {
                     codeTypes.Add(new CodeType(typeDefinition));
                 }
@@ -39,38 +44,50 @@ namespace LiveSource.Core.CecilModel
 
         public void Inject(CodeMethod method)
         {
-//            Logger.Current.Debug("Method >> " + method.MethodDefinition.Name);
+            Logger.Current.Debug("Method >> " + method.MethodDefinition.Name);
 
             if (null == method.MethodDefinition.Body)
                 return;
-            
-            if (method.MethodDefinition.Attributes.ToString().Contains("Compilercontrolled"))
+
+            foreach (CustomAttribute customAttribute in method.MethodDefinition.CustomAttributes)
             {
-                Logger.Current.Debug("Method:" + method.MethodDefinition.DeclaringType.FullName + "." + method.MethodDefinition.Name + " is compiler controlled");
-                return;
+                if (Equals(customAttribute.Constructor.DeclaringType.FullName,
+                           "System.Diagnostics.DebuggerNonUserCodeAttribute") ||
+                    Equals(customAttribute.Constructor.DeclaringType.FullName,
+                           "System.Runtime.CompilerServices.CompilerGeneratedAttribute"))
+                {
+                    return;
+                }
             }
-            
-//            AddStartMethodStatement(method, method.MethodDefinition.Body.Instructions[0], ">Begin");
+
+            AddStartMethodStatement(method, method.MethodDefinition.Body.Instructions[0], "Begin");
 
             foreach (CodeInstruction i in method.Instructions)
             {
-                if(i.Instruction.OpCode.Equals(OpCodes.Ret))
+                if (Equals(i.Instruction.OpCode, OpCodes.Ret))
                 {
-//                    Console.WriteLine("Instruction is ret");
-                    //AddEndMethodStatement(method, i.Instruction, "<End");
+                    AddEndMethodStatement(method, i.Instruction, "End");
                 }
             }
         }
 
         private void AddStartMethodStatement(CodeMethod method, Instruction instruction, string prefix)
         {
-            Instruction beginSentence = method.MethodDefinition.Body.CilWorker.Create(OpCodes.Ldstr, prefix + "-" + method.MethodDefinition.DeclaringType.FullName + "-" + method.MethodDefinition.Name);   
+            Instruction beginSentence = method.MethodDefinition.Body.CilWorker.Create(OpCodes.Ldstr,
+                                                                                      prefix + "-" +
+                                                                                      method.MethodDefinition.
+                                                                                          DeclaringType.FullName + "-" +
+                                                                                      method.MethodDefinition.Name);
             InsertStatement(method, instruction, beginSentence);
         }
 
         private void AddEndMethodStatement(CodeMethod method, Instruction instruction, string prefix)
         {
-            Instruction endSentence = method.MethodDefinition.Body.CilWorker.Create(OpCodes.Ldstr, prefix + "-" + method.MethodDefinition.DeclaringType.FullName + "-" + method.MethodDefinition.Name);
+            Instruction endSentence = method.MethodDefinition.Body.CilWorker.Create(OpCodes.Ldstr,
+                                                                                    prefix + "-" +
+                                                                                    method.MethodDefinition.
+                                                                                        DeclaringType.FullName + "-" +
+                                                                                    method.MethodDefinition.Name);
             InsertStatement(method, instruction, endSentence);
         }
 
@@ -79,6 +96,7 @@ namespace LiveSource.Core.CecilModel
             Instruction callLoggerDebug = method.MethodDefinition.Body.CilWorker.Create(OpCodes.Call, loggerDebug);
             method.MethodDefinition.Body.CilWorker.InsertBefore(lastInstruction, endSentence);
             method.MethodDefinition.Body.CilWorker.InsertAfter(endSentence, callLoggerDebug);
+            method.MethodDefinition.Body.CilWorker.InsertAfter(callLoggerDebug, method.MethodDefinition.Body.CilWorker.Create(OpCodes.Nop));
         }
 
         public void Save(string assemblyFile)

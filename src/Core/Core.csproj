@@ -55,6 +55,7 @@
     <Compile Include="CecilModel\CodeInstruction.cs" />
     <Compile Include="CecilModel\CodeMethod.cs" />
     <Compile Include="CecilModel\CodeType.cs" />
+    <Compile Include="IAssemblyData.cs" />
     <Compile Include="Logger.cs" />
   </ItemGroup>
   <ItemGroup>
