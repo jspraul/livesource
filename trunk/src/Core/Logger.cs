@@ -43,7 +43,7 @@ namespace LiveSource.Core
         public void Debug(string message)
         {
             if (this.log.IsDebugEnabled)
-                this.log.Debug("[" + DateTime.Now + "] " + ExtractInfo(message));
+                this.log.Debug(message);
         }
 
         public void Info(string message)
