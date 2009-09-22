@@ -24,7 +24,7 @@ namespace LoggingAspect
                     {
                         if (current == null) 
                         {
-                            BasicConfigurator.Configure(new FileAppender(new PatternLayout("%n[%t][%d] %m%n"), "testfile.log.txt"));
+                            BasicConfigurator.Configure(new FileAppender(new PatternLayout("%n[%t][%d] %m%n"), "tracefile.log.txt"));
                             current = new AspectLogger();
                         }
                     }
