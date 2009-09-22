@@ -49,14 +49,17 @@
 	</target>
 	
 	<target name="generate-version-file">
-		<property name="buildnumber.major" value="1" />
-		<property name="buildnumber.minor" value="0" />
+		<property name="buildnumber.major" value="0" />
+		<property name="buildnumber.minor" value="1" />
 		<property name="buildnumber.build" value="0" />
 		<property name="buildnumber.revision" value="0" />
 		
 	    <property name="hudson.build" value="${buildnumber.build}" />
 
-		<!-- add code to get version number from hudson BUILD_NUMBER env variable -->
+      <if test="${environment::variable-exists('BUILD_NUMBER')}">
+        <property name="hudson.build" value="${environment::get-variable('BUILD_NUMBER')}"/>
+        <echo message="Setting hudson build number ${hudson.build}" />
+      </if>
 	    
 	    <property name="LiveSource.version" 
 	              value="${buildnumber.major}.${buildnumber.minor}.${hudson.build}.${buildnumber.revision}"/>
