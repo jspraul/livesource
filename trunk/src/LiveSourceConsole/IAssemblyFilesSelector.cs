@@ -11,11 +11,11 @@ namespace LiveSource.LiveSourceConsole
     {
         public string[] SelectAssemblies() 
         {
-//              return new[] { @"E:\Code\LiveSource\build\Debug\LiveSource.UnitTests.dll" };
-            string sourceFilePath = @"E:\code\Sourceforge\dotnet\wittytwitter\Witty\Witty\bin\Debug\Witty.exe";
-            string destinationFilePath = @"E:\code\Sourceforge\dotnet\wittytwitter\Witty\Witty\bin\Debug\Witty_2.exe";
-            File.Copy(sourceFilePath, destinationFilePath, true);
-            return new[] { @"E:\code\Sourceforge\dotnet\wittytwitter\Witty\Witty\bin\Debug\Witty_2.exe" };
+              return new[] { @"E:\Code\LiveSource\build\Debug\LiveSource.UnitTests.dll" };
+//            string sourceFilePath = @"E:\code\Sourceforge\dotnet\wittytwitter\Witty\Witty\bin\Debug\Witty.exe";
+//            string destinationFilePath = @"E:\code\Sourceforge\dotnet\wittytwitter\Witty\Witty\bin\Debug\Witty_2.exe";
+//            File.Copy(sourceFilePath, destinationFilePath, true);
+//            return new[] { destinationFilePath, @"E:\Code\Sourceforge\dotnet\wittytwitter\Witty\Witty\bin\Debug\Common.dll" };
         }
     }
 }

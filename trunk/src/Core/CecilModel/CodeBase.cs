@@ -9,7 +9,7 @@ namespace LiveSource.Core.CecilModel
     internal class CodeBase
     {
         private readonly AssemblyDefinition TargetAssemblyDefinition;
-        private readonly MethodReference loggerDebug;
+        private readonly MethodReference importedTraceMethod;
         public readonly string AssemblyFile;
 
         public List<CodeType> Types
@@ -31,8 +31,10 @@ namespace LiveSource.Core.CecilModel
             this.AssemblyFile = assemblyFile;
             TargetAssemblyDefinition = AssemblyFactory.GetAssembly(this.AssemblyFile);
 
-            MethodInfo debugWriter = typeof (LoggingAspect.AspectLogger).GetMethod("Debug", new[] {typeof (string)});
-            loggerDebug = TargetAssemblyDefinition.MainModule.Import(debugWriter);
+            TargetAssemblyDefinition.MainModule.FullLoad();
+
+            MethodInfo traceWriter = typeof(LoggingAspect.AspectLogger).GetMethod("Trace", new[] { typeof(string) });
+            importedTraceMethod = TargetAssemblyDefinition.MainModule.Import(traceWriter);
         }
 
         public void AddAssemblyReference()
@@ -61,7 +63,22 @@ namespace LiveSource.Core.CecilModel
             if (!ValidMethod(method))
                 return;
 
+            method.MethodDefinition.Body.Simplify();
+
             AddStartMethodStatement(method, method.MethodDefinition.Body.Instructions[0], "Begin");
+
+            foreach (CodeInstruction ins in method.Instructions)
+            {
+                if (ins.Instruction.OpCode.Equals(OpCodes.Ret))
+                {
+                    AddEndMethodStatement(method, ins.Instruction, "End");
+                }
+            }
+            
+//            int instructionCount = method.MethodDefinition.Body.Instructions.Count;
+//            AddEndMethodStatement(method, method.MethodDefinition.Body.Instructions[instructionCount - 2], "End");
+
+            method.MethodDefinition.Body.Optimize();
         }
 
         private static bool ValidMethod(CodeMethod method)
@@ -69,7 +86,8 @@ namespace LiveSource.Core.CecilModel
             if (null == method.MethodDefinition.Body)
                 return false;
 
-            foreach (CustomAttribute customAttribute in method.MethodDefinition.CustomAttributes) {
+            foreach (CustomAttribute customAttribute in method.MethodDefinition.CustomAttributes) 
+            {
                 // TODO: Make following configurable
                 if (Equals(customAttribute.Constructor.DeclaringType.FullName,
                            "System.Diagnostics.DebuggerNonUserCodeAttribute") ||
@@ -83,7 +101,7 @@ namespace LiveSource.Core.CecilModel
             return true;
         }
 
-        private void AddStartMethodStatement(CodeMethod method, Instruction instruction, string prefix)
+        private void AddStartMethodStatement(CodeMethod method, Instruction instruction, string prefix) 
         {
             Instruction beginSentence = method.MethodDefinition.Body.CilWorker.Create(OpCodes.Ldstr,
                                                                                       prefix + "-" +
@@ -93,9 +111,19 @@ namespace LiveSource.Core.CecilModel
             InsertStatement(method, instruction, beginSentence);
         }
 
+        private void AddEndMethodStatement(CodeMethod method, Instruction instruction, string prefix) 
+        {
+            Instruction endSentence = method.MethodDefinition.Body.CilWorker.Create(OpCodes.Ldstr,
+                                                                                    prefix + "-" +
+                                                                                    method.MethodDefinition.
+                                                                                        DeclaringType.FullName + "-" +
+                                                                                    method.MethodDefinition.Name);
+            InsertStatement(method, instruction, endSentence);
+        }
+
         private void InsertStatement(CodeMethod method, Instruction lastInstruction, Instruction endSentence)
         {
-            Instruction callLoggerDebug = method.MethodDefinition.Body.CilWorker.Create(OpCodes.Call, loggerDebug);
+            Instruction callLoggerDebug = method.MethodDefinition.Body.CilWorker.Create(OpCodes.Call, importedTraceMethod);
             method.MethodDefinition.Body.CilWorker.InsertBefore(lastInstruction, endSentence);
             method.MethodDefinition.Body.CilWorker.InsertAfter(endSentence, callLoggerDebug);
             method.MethodDefinition.Body.CilWorker.InsertAfter(callLoggerDebug, method.MethodDefinition.Body.CilWorker.Create(OpCodes.Nop));
